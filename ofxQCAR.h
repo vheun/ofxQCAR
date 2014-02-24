@@ -47,7 +47,6 @@ public:
     float poseMatrixData[3*4];
     float scaleX;
     float scaleY;
- 
     
     ofRectangle markerRect;
     ofVec2f markerCenter;
@@ -118,13 +117,6 @@ public:
 
     bool hasFoundMarker();
     int numOfMarkersFound();
-    
-    // this are just some values to use in a to complex programm
-    // in order to move values across diffrerent parts. 
-    float possX;
-    float possY;
-    float possXint;
-    float possYint;
     
     void setMaxNumOfMarkers(int maxNumOfMarkers);
     int getMaxNumOfMarkers();
