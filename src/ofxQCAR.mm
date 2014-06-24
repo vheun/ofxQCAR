@@ -505,16 +505,25 @@ void ofxQCAR::addExtraTarget(string targetName) {
          return;
         
     }
+    
     // Load the data sets:
-    if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
+    if (extraset->exists(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
     {
-        if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+        NSLog(@"Dataset exists in app source.");
+        if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
         {
             NSLog(@"Failed to load absolute data set.");
             return;
         }
+    }
+    else if (extraset->exists(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+    {
+        NSLog(@"Dataset exists at absolute possition.");
+    if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+    {
         NSLog(@"Failed to load data set.");
         return;
+    }
     }
 
    
