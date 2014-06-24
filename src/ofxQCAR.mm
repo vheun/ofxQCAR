@@ -508,9 +508,15 @@ void ofxQCAR::addExtraTarget(string targetName) {
     // Load the data sets:
     if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
     {
+        if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+        {
+            NSLog(@"Failed to load absolute data set.");
+            return;
+        }
         NSLog(@"Failed to load data set.");
-         return;
+        return;
     }
+
    
     // Activate the data set:
     if (!imageTracker->activateDataSet(extraset))
