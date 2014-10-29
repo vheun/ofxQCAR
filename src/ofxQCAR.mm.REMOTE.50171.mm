@@ -518,7 +518,6 @@ void ofxQCAR::addExtraTarget(string targetName) {
         ofLog(OF_LOG_ERROR, "Failed to create a new tracking data.");
         return;
     }
-    
     // Load the data sets:
     bool bLoaded = extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE);
     if(bLoaded == false) {

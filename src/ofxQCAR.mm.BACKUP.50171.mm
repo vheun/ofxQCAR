@@ -520,11 +520,34 @@ void ofxQCAR::addExtraTarget(string targetName) {
     }
     
     // Load the data sets:
+<<<<<<< HEAD
+    if (extraset->exists(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
+    {
+        NSLog(@"Dataset exists in app source.");
+        if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
+        {
+            NSLog(@"Failed to load absolute data set.");
+            return;
+        }
+    }
+    else if (extraset->exists(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+    {
+        NSLog(@"Dataset exists at absolute possition.");
+    if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+    {
+        NSLog(@"Failed to load data set.");
+        return;
+    }
+    }
+
+   
+=======
     bool bLoaded = extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE);
     if(bLoaded == false) {
         ofLog(OF_LOG_ERROR, "Failed to load data set.");
         return;
     }
+>>>>>>> upstream/master
     // Activate the data set:
     bool bActivated = imageTracker->activateDataSet(extraset);
     if(bActivated == false) {

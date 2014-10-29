@@ -59,24 +59,7 @@ Vec2F cameraPointToScreenPoint(Vec2F cameraPoint) {
 }
 
 class ofxQCAR_UpdateCallback : public UpdateCallback {
-    
-public:
-    
-    bool bUpdateCallbackInProgress = false;
-    bool isUpdateCallbackInProgress() {
-        return bUpdateCallbackInProgress;
-    }
-    
-    vector<ofxQCAR_Marker> markersFound;
-    vector<ofxQCAR_Marker> & getMarkersFound() {
-        return markersFound;
-    }
-    
-private:
-    
     virtual void QCAR_onUpdate(State& state) {
-        
-        bUpdateCallbackInProgress = true;
         
         ofxQCAR * qcar = ofxQCAR::getInstance();
         
@@ -118,7 +101,7 @@ private:
             }
         }
         
-        markersFound.clear();
+        qcar->markersFound.clear();
         
         int numOfTrackables = state.getNumTrackableResults();
         for(int i=0; i<numOfTrackables; ++i) {
@@ -146,8 +129,8 @@ private:
                 scaleY = config.mSize.data[0] / (float)ofGetWidth();
             }
             
-            markersFound.push_back(ofxQCAR_Marker());
-            ofxQCAR_Marker & marker = markersFound.back();
+            qcar->markersFound.push_back(ofxQCAR_Marker());
+            ofxQCAR_Marker & marker = qcar->markersFound.back();
             
             marker.modelViewMatrix = ofMatrix4x4(modelViewMatrix.data);
             marker.modelViewMatrix.scale(scaleY, scaleX, 1);
@@ -159,7 +142,7 @@ private:
             
             Vec2F markerSize;
             const Trackable & trackable = trackableResult->getTrackable();
-            if(trackable.isOfType(ImageTarget::getClassType())){
+            if(trackableResult -> isOfType(ImageTarget::getClassType())){
                 ImageTarget* imageTarget = (ImageTarget *)(&trackable);
                 markerSize = imageTarget->getSize();
             }
@@ -210,8 +193,6 @@ private:
             }
             marker.markerAngleToCamera = angle;
         }
-        
-        bUpdateCallbackInProgress = false;
     }
     
 } qcarUpdate;
@@ -495,10 +476,11 @@ void ofxQCAR::startExtendedTracking() {
     if(userDefDateSet == NULL) {
         return;
     }
-    for(int i=0; i<userDefDateSet->getNumTrackables(); i++) {
-        QCAR::Trackable * trackable = userDefDateSet->getTrackable(i);
-        if(trackable->startExtendedTracking() == false){
-            ofLog(OF_LOG_ERROR, "Failed to start extended tracking");
+    for (int i = 0; i < userDefDateSet->getNumTrackables(); i++)
+    {
+        QCAR::Trackable* trackable = userDefDateSet->getTrackable(i);
+        if (!trackable->startExtendedTracking()){
+            NSLog(@"Failed to start extended tracking");
         }
     }
 #endif
@@ -508,31 +490,55 @@ void ofxQCAR::addExtraTarget(string targetName) {
 #if !(TARGET_IPHONE_SIMULATOR)
     TrackerManager & trackerManager = TrackerManager::getInstance();
     ImageTracker * imageTracker = static_cast<ImageTracker *>(trackerManager.getTracker(ImageTracker::getClassType()));
-    if(imageTracker == NULL) {
-        ofLog(OF_LOG_ERROR, "Failed to load tracking data set because the ImageTracker has not been initialized.");
-        return;
+    
+    if (imageTracker == NULL)
+    {
+        NSLog(@"Failed to load tracking data set because the ImageTracker has"
+              " not been initialized.");
+         return;
     }
     // Create the data sets:
-    DataSet * extraset = imageTracker->createDataSet();
-    if(extraset == NULL) {
-        ofLog(OF_LOG_ERROR, "Failed to create a new tracking data.");
-        return;
+    DataSet *  extraset = imageTracker->createDataSet();
+    if (extraset == 0)
+    {
+        NSLog(@"Failed to create a new tracking data.");
+         return;
+        
     }
     
     // Load the data sets:
-    bool bLoaded = extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE);
-    if(bLoaded == false) {
-        ofLog(OF_LOG_ERROR, "Failed to load data set.");
+    if (extraset->exists(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
+    {
+        NSLog(@"Dataset exists in app source.");
+        if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_APPRESOURCE))
+        {
+            NSLog(@"Failed to load absolute data set.");
+            return;
+        }
+    }
+    else if (extraset->exists(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+    {
+        NSLog(@"Dataset exists at absolute possition.");
+    if (!extraset->load(targetName.c_str(), QCAR::DataSet::STORAGE_ABSOLUTE))
+    {
+        NSLog(@"Failed to load data set.");
         return;
     }
+    }
+
+   
     // Activate the data set:
-    bool bActivated = imageTracker->activateDataSet(extraset);
-    if(bActivated == false) {
-        ofLog(OF_LOG_ERROR, "Failed to activate data set.");
-        return;
+    if (!imageTracker->activateDataSet(extraset))
+    {
+        NSLog(@"Failed to activate data set.");
+         return;
     }
+   
     
-    ofLog(OF_LOG_VERBOSE, "New dataset active. Active datasets: " + ofToString(imageTracker->getActiveDataSetCount()));
+    
+    NSLog(@"New dataset active. Active datasets: %d", imageTracker->getActiveDataSetCount());
+
+    
 #endif
 }
 
@@ -543,18 +549,20 @@ void ofxQCAR::stopExtendedTracking() {
     if(imageTracker == NULL) {
         return;
     }
-    DataSet * userDefDateSet = imageTracker->getActiveDataSet();
+    DataSet * userDefDateSet = imageTracker->getActiveDataSet();;
     if(userDefDateSet == NULL) {
         return;
     }
-    for(int i=0; i<userDefDateSet->getNumTrackables(); i++) {
-        QCAR::Trackable * trackable = userDefDateSet->getTrackable(i);
-        if(trackable->stopExtendedTracking() == false) {
-            ofLog(OF_LOG_VERBOSE, "Failed to start extended tracking");
+    for (int i = 0; i < userDefDateSet->getNumTrackables(); i++)
+    {
+        QCAR::Trackable* trackable = userDefDateSet->getTrackable(i);
+        if (!trackable->stopExtendedTracking()) {
+            printf("Failed to start extended tracking");
         }
     }
 #endif
 }
+
 
 /////////////////////////////////////////////////////////
 //  SETTERS.
@@ -744,54 +752,6 @@ ofVec2f ofxQCAR::point3DToScreen2D(ofVec3f point, unsigned int i) {
 #endif
 }
 
-ofVec2f ofxQCAR::screenPointToMarkerPoint(ofVec2f screenPoint, unsigned int i) {
-    
-#if !(TARGET_IPHONE_SIMULATOR)
-    if(i < numOfMarkersFound()) {
-        
-        ofxQCAR_Marker & marker = markersFound[i];
-        
-        float x = ofMap(screenPoint.x, 0, ofGetWidth(), -1.0, 1.0);
-        float y = ofMap(screenPoint.y, 0, ofGetHeight(), 1.0, -1.0);
-
-        ofVec3f ndcNear(x, y, -1);
-        ofVec3f ndcFar(x, y, 1);
-        
-        ofMatrix4x4 inverseProjMatrix = marker.projectionMatrix.getInverse();
-        ofVec3f pointOnNearPlane = inverseProjMatrix.preMult(ndcNear);
-        ofVec3f pointOnFarPlane = inverseProjMatrix.preMult(ndcFar);
-        
-        ofMatrix4x4 inverseModelViewMatrix = marker.modelViewMatrix.getInverse();
-        ofVec3f lineStart = inverseModelViewMatrix.preMult(pointOnNearPlane);
-        ofVec3f lineEnd = inverseModelViewMatrix.preMult(pointOnFarPlane);
-        ofVec3f lineDir = (lineEnd - lineStart).getNormalized();
-
-        ofVec3f planeCenter(0, 0, 0);
-        ofVec3f planeNormal(0, 0, 1);
-        ofVec3f planeDir = planeCenter - lineStart;
-
-        float n = planeNormal.dot(planeDir);
-        float d = planeNormal.dot(lineDir);
-        
-        if(fabs(d) < 0.00001) {
-            // Line is parallel to plane
-            return ofVec2f();
-        }
-        
-        float dist = n / d;
-        ofVec3f offset = lineDir * dist;
-        ofVec3f intersection = lineStart + offset;
-        
-        return ofVec2f(intersection.x, intersection.y);
-        
-    } else {
-        return ofVec2f();
-    }
-#else
-    return ofVec2f();
-#endif
-}
-
 void ofxQCAR::setCameraPixelsFlag(bool b) {
     bUpdateCameraPixels = b;
 }
@@ -818,19 +778,6 @@ void ofxQCAR::setFlipY(bool b) {
 
 void ofxQCAR::update () {
     bBeginDraw = false;
-
-#if !(TARGET_IPHONE_SIMULATOR)
-    
-    // the qcar update callback runs in a different thread.
-    // code below first checks if the update callback is progress,
-    // if not, marker data is copied from the qcarUpdate object.
-
-    if(qcarUpdate.isUpdateCallbackInProgress() == true) {
-        return;
-    }
-    markersFound = qcarUpdate.getMarkersFound();
-    
-#endif
 }
 
 /////////////////////////////////////////////////////////
@@ -852,28 +799,28 @@ void ofxQCAR::begin(unsigned int i) {
     ofPushView();
     
     // TODO!
-    // seems to me that when bFlipY is true,
-    // this is the correct convention.
-    // but all older projects have been working with bFlipY set the false.
-    // todo in the future is remove bFlipY and assume its always true.
+        // seems to me that when bFlipY is true,
+        // this is the correct convention.
+        // but all older projects have been working with bFlipY set the false.
+        // todo in the future is remove bFlipY and assume its always true.
     
-    if(bFlipY == false) {
-        ofSetOrientation(ofGetOrientation(), false);
-    }
+        if(bFlipY == false) {
+            ofSetOrientation(ofGetOrientation(), false);
+        }
     
     ofSetMatrixMode(OF_MATRIX_PROJECTION);
     ofMatrix4x4 projectionMatrix = getProjectionMatrix(i);
     if(bFlipY == true) {
-        projectionMatrix.postMultScale(ofVec3f(1, -1, 1));
-    }
+                projectionMatrix.postMultScale(ofVec3f(1, -1, 1));
+            }
     ofLoadMatrix(projectionMatrix);
     
     ofSetMatrixMode(OF_MATRIX_MODELVIEW);
     ofMatrix4x4 modelViewMatrix = getModelViewMatrix(i);
     ofLoadMatrix(modelViewMatrix);
     if(bFlipY == true) {
-        ofScale(1, -1, 1);
-    }
+                ofScale(1, -1, 1);
+            }
 }
 
 void ofxQCAR::end () {
@@ -936,7 +883,7 @@ void ofxQCAR::draw() {
     
     if([ofxQCAR_Utils getInstance].QCARFlags & QCAR::GL_20) {
         ofGLProgrammableRenderer * renderer = (ofGLProgrammableRenderer *)ofGetCurrentRenderer().get();
-        const ofShader & currentShader = renderer->getCurrentShader();
+        ofShader & currentShader = renderer->getCurrentShader();
         currentShader.begin();
     }
     
