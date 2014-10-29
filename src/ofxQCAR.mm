@@ -329,8 +329,13 @@ void ofxQCAR::setup() {
         arSize.width = [[UIScreen mainScreen] bounds].size.width;
         arSize.height = [[UIScreen mainScreen] bounds].size.height;
     } else {
-        arSize.width = [[UIScreen mainScreen] bounds].size.height;
-        arSize.height = [[UIScreen mainScreen] bounds].size.width;
+        if(NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1) {
+        arSize.height = [[UIScreen mainScreen] bounds].size.height;
+        arSize.width = [[UIScreen mainScreen] bounds].size.width;
+        }else{
+            arSize.width = [[UIScreen mainScreen] bounds].size.height;
+            arSize.height = [[UIScreen mainScreen] bounds].size.width;
+        }
     }
     
     [[ofxQCAR_Utils getInstance] createARofSize:arSize
@@ -936,7 +941,7 @@ void ofxQCAR::draw() {
     
     if([ofxQCAR_Utils getInstance].QCARFlags & QCAR::GL_20) {
         ofGLProgrammableRenderer * renderer = (ofGLProgrammableRenderer *)ofGetCurrentRenderer().get();
-        const ofShader & currentShader = renderer->getCurrentShader();
+        ofShader & currentShader = renderer->getCurrentShader();
         currentShader.begin();
     }
     

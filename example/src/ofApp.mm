@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofBackground(0);
-    ofSetOrientation(OF_ORIENTATION_DEFAULT);
+    ofSetOrientation(OF_ORIENTATION_90_LEFT);
     
     teapotImage.loadImage("qcar_assets/TextureTeapotBrass.png");
     teapotImage.mirror(true, false);  //-- flip texture vertically since the texture coords are set that way on the teapot.
@@ -13,6 +13,7 @@ void ofApp::setup(){
     ofxQCAR * qcar = ofxQCAR::getInstance();
     qcar->addTarget("Qualcomm.xml", "Qualcomm.xml");
     qcar->autoFocusOn();
+     qcar->setOrientation(OFX_QCAR_ORIENTATION_LANDSCAPE);
     qcar->setCameraPixelsFlag(true);
     qcar->setup();
 }

@@ -97,7 +97,13 @@ static ofxQCAR_Utils *qUtils = nil; // singleton class
         currentDataSet = nil;
         contentScalingFactor = 1.0f; // non-Retina is default
         appStatus = APPSTATUS_UNINITED;
+          UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if(NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1 && UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
+        viewSize.width = [[UIScreen mainScreen] bounds].size.height; // set as full screen
+        viewSize.height = [[UIScreen mainScreen] bounds].size.width; // set as full screen
+        }else{
         viewSize = [[UIScreen mainScreen] bounds].size; // set as full screen
+        };
         
         targetType = TYPE_IMAGETARGETS;
         targetsList = [[NSMutableArray alloc] init];

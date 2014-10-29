@@ -27,7 +27,11 @@
 
 - (id)initWithAppInLandscapeMode:(ofxiOSApp *)app {
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
-    return [self initWithFrame:CGRectMake(0, 0, screenSize.height, screenSize.width) app:app];
+    
+     if(NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1) {
+    return [self initWithFrame:CGRectMake(0, 0, screenSize.width, screenSize.height) app:app];
+     }else
+     {return [self initWithFrame:CGRectMake(0, 0, screenSize.height, screenSize.width) app:app];};
 }
 
 - (void)viewDidLoad {
@@ -74,8 +78,13 @@
         centre.x = screenSize.width * 0.5;
         centre.y = screenSize.height * 0.5;
     } else if(UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
+          if(NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1) {
         centre.x = screenSize.height * 0.5;
         centre.y = screenSize.width * 0.5;
+          }else{
+              centre.y = screenSize.height * 0.5;
+              centre.x = screenSize.width * 0.5;
+          }
     }
     
     if (interfaceOrientation == UIInterfaceOrientationPortrait) {
